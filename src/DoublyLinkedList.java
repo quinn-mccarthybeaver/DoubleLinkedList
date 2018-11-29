@@ -2,24 +2,46 @@
 public class DoublyLinkedList {
 
     private Node front;   // first element in the list
-    //    private Node current;   // current element in the list
-    private Node last;   // last element in the list
-    private int size;    // number of elements in the list
+    private Node last;    // last element in the list
+    private int size;     // number of elements in the list
 
     // post: constructs an empty list
     public DoublyLinkedList() {
         front = last = null;
-        // current = null;
-        size = 0;
+        size         = 0;
     }
 
     // post: constructs a list with data in first element and "list" after that
     public DoublyLinkedList(int data, DoublyLinkedList list) {
-        this.front = new Node(data);
-        //        this.current    = this.front;
+        this.front      = new Node(data);
         this.front.next = list.front;
         this.last       = list.last;
         this.size       = list.size + 1;
+    }
+
+    // compares the contents of two lists, returns true if all Nodes in each list are equal
+    public int getSize() {
+        return size;
+    }
+
+    public boolean equals(DoublyLinkedList other) {
+        if (this.size != other.size) {
+            return false;
+        } else {
+            Node current      = this.front;
+            Node otherCurrent = other.front;
+
+            for (int i = 0; i < this.size; i++) {
+                if (current.equals(otherCurrent)) {
+                    current      = current.next;
+                    otherCurrent = otherCurrent.next;
+                } else {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     // post: returns the integer at the given index in the list
@@ -46,12 +68,23 @@ public class DoublyLinkedList {
     private void addBehind(Node current, int value) {
         if (current.next == null) {
             this.add(value);
-            return;
+        } else {
+            Node toAdd = new Node(current, value, current.next);
+            size++;
         }
-        Node toAdd            = new Node(current, value, current.next);
-        current.next.previous = toAdd;
-        current.next          = toAdd;
-        size++;
+    }
+
+    private void addBefore(Node current, int value) {
+        if (this.front == current) {
+            Node toAdd       = new Node(value);
+            current.previous = toAdd;
+            toAdd.next       = current;
+            this.front       = toAdd;
+            size++;
+        } else {
+            Node toAdd = new Node(current.previous, value, current);
+            size++;
+        }
     }
 
     // post: appends the given value to the end of the list
@@ -59,11 +92,11 @@ public class DoublyLinkedList {
         if (this.last == null) {
             this.last = this.front = new Node(value);
             size++;
-            return;
+        } else {
+            last.next = new Node(last, value, null);
+            last      = last.next;
+            size++;
         }
-        last.next = new Node(last, value, null);
-        last      = last.next;
-        size++;
     }
 
     // adds a node with value at given index
@@ -71,40 +104,41 @@ public class DoublyLinkedList {
         // we're inserting at the end of the list we just use the already implemented add method
         if (index == size) {
             this.add(value);
-            return;
+        } else {
+            this.addBefore(nodeAt(index), value);
         }
-
-        // if we're not adding to the end of the list we need to verify the index is correct and
-        // make a node to insert
-        checkIndex(index);
-        Node toAdd = new Node(value);
-
-        // if the node goes at index zero we don't need to travel down the list
-        if (index == 0) {
-            this.front.previous = toAdd;
-            toAdd.next          = this.front;
-            this.front          = toAdd;
-            size++;
-            return;
-        }
-
-        // add the node in front of the node curently at given index
-        this.addBehind(nodeAt(index - 1), value);
     }
 
     public void addAlternative(int value) {
         if (this.size == 0) {
             this.add(value);
-            return;
-        }
+        } else {
+            Node current = this.front;
+            while (current != this.last) {
+                this.addBehind(current, value);
+                current = current.next.next;
+            }
 
-        Node current = this.front;
-        while (current != this.last) {
             this.addBehind(current, value);
-            current = current.next.next;
         }
+    }
 
-        this.addBehind(current, value);
+    public void addAll(int index, int... values) {
+        if (size == index) {
+            for (int i = 0; i < values.length; i++) {
+                this.add(values[i]);
+            }
+        } else if (index < this.size) {
+            Node current = nodeAt(index);
+
+            // elements must be added in reverse order
+            for (int i = values.length - 1; i >= 0; i--) {
+                this.addBefore(current, values[i]);
+                current = current.previous;
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid index");
+        }
     }
 
     // post: removes value at the given index
@@ -152,6 +186,20 @@ public class DoublyLinkedList {
         }
     }
 
+    public String toStringReverse() {
+        if (size == 0) {
+            return "[]";
+        } else {
+            String toReturn = "[" + this.last.data;
+            Node current    = this.last.previous;
+            while (current != null) {
+                toReturn += ", " + current.data;
+                current = current.previous;
+            }
+            return toReturn + "]";
+        }
+    }
+
     // Node inner class containing the data, and next and previous references
     private static class Node {
         Node previous;
@@ -183,8 +231,13 @@ public class DoublyLinkedList {
             }
         }
 
+        @Override
         public String toString() {
             return "[" + this.data + "]";
+        }
+
+        public boolean equals(Node other) {
+            return this.data == other.data;
         }
     }
 }

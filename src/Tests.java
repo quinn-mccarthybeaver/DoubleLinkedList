@@ -1,11 +1,10 @@
 public class Tests {
     public static void main(String[] args) {
-        DoublyLinkedList d = new DoublyLinkedList();
-        d.add(1);
-        d.add(2);
-        d.add(3);
-        d.add(4);
-        d.addAlternative(10);
-        System.out.println(d);
+	DoublyLinkedList a = new DoublyLinkedList();
+	a.add(0);
+	System.out.println(a.getSize());
+	a.addAll(1, 1, 2, 3, 4, 5, 6, 7);
+	System.out.println(a);
+	System.out.println(a.getSize());
     }
 }
